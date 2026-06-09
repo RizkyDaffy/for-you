@@ -115,7 +115,9 @@ function Ask() {
           <button
             className={`btn btn-no ${noPos ? "fly" : ""}`}
             style={noPos ? { left: noPos.x, top: noPos.y } : undefined}
-            onClick={handleNo}
+            onPointerDown={advanceNo}
+            onMouseEnter={dodge}
+            onTouchStart={(e) => { e.preventDefault(); advanceNo(); }}
           >
             {noLabel}
           </button>
