@@ -108,14 +108,14 @@ function Ask() {
       <div className="btn-row">
         <button
           ref={yesRef}
-          className={`btn btn-yes ${stage >= 5 ? "full" : ""}`}
-          style={stage < 5 ? { transform: `scale(${yesScale})` } : undefined}
+          className={`btn btn-yes ${noGone ? "full" : ""}`}
+          style={!noGone ? { transform: `scale(${yesScale})` } : undefined}
           onClick={handleYes}
         >
           {yesLabel}
         </button>
 
-        {stage < 5 && (
+        {!noGone && (
           <button
             className={`btn btn-no ${noPos ? "fly" : ""}`}
             style={noPos ? { left: noPos.x, top: noPos.y } : undefined}
