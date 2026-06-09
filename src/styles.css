@@ -183,3 +183,31 @@ body {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.btn-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 1rem;
+}
+
+.input-custom {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 999px;
+  border: 2px solid var(--peach-deep);
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  appearance: none;
+}
+.input-custom:focus {
+  border-color: var(--green);
+}

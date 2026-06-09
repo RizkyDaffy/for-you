@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import penguins from "@/assets/penguins.jpg";
-import cat from "@/assets/cat.jpg";
+import penguins from "@/assets/movie.gif";
+import cat from "@/assets/yeay.gif";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Would you go out with me?" },
+      { title: "Mw ga nonton bareng aku" },
       { name: "description", content: "A cute little ask." },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
     ],
@@ -14,12 +14,34 @@ export const Route = createFileRoute("/")({
   component: Ask,
 });
 
-const NO_LABELS = ["emm.. no", "no man", "hmmm no", "still no"];
+const NO_LABELS = ["eum.. gimana ya", "nggak mau ah", "ga mw", "masih g mw"];
 
-function randomPos(btnW: number, btnH: number, stage: number) {
+function randomPos(
+  btnW: number,
+  btnH: number,
+  stage: number,
+  yesBox: { x: number; y: number; w: number; h: number } | null
+) {
   const pad = 12;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+
+  const isOverlapping = (px: number, py: number) => {
+    if (!yesBox) return false;
+    const buffer = 80;
+    const minX = yesBox.x - buffer;
+    const maxX = yesBox.x + yesBox.w + buffer;
+    const minY = yesBox.y - buffer;
+    const maxY = yesBox.y + yesBox.h + buffer;
+
+    return (
+      px + btnW >= minX &&
+      px <= maxX &&
+      py + btnH >= minY &&
+      py <= maxY
+    );
+  };
+
   if (stage === 4) {
     // Tucked corner
     const corners = [
@@ -28,24 +50,39 @@ function randomPos(btnW: number, btnH: number, stage: number) {
       { x: pad, y: vh - btnH - pad },
       { x: vw - btnW - pad, y: vh - btnH - pad },
     ];
+    const validCorners = corners.filter((c) => !isOverlapping(c.x, c.y));
+    if (validCorners.length > 0) {
+      return validCorners[Math.floor(Math.random() * validCorners.length)];
+    }
     return corners[Math.floor(Math.random() * corners.length)];
   }
-  const x = Math.random() * Math.max(1, vw - btnW - pad * 2) + pad;
-  const y = Math.random() * Math.max(1, vh - btnH - pad * 2) + pad;
+  let x = pad;
+  let y = pad;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    x = Math.random() * Math.max(1, vw - btnW - pad * 2) + pad;
+    y = Math.random() * Math.max(1, vh - btnH - pad * 2) + pad;
+    if (!isOverlapping(x, y)) {
+      break;
+    }
+  }
   return { x, y };
 }
 
 function Ask() {
-  const [stage, setStage] = useState(1); // 1..6 (visual buckets + final)
+  const [stage, setStage] = useState(1); // 1..6 (visual buckets + final), 7..10 for flow
   const [noHits, setNoHits] = useState(0); // 0..10
   const [noPos, setNoPos] = useState<{ x: number; y: number } | null>(null);
   const yesRef = useRef<HTMLButtonElement>(null);
   const [yesBox, setYesBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
+  const [location, setLocation] = useState("");
+  const [movie, setMovie] = useState("");
+  const [dateStr, setDateStr] = useState("");
+
   const MAX_HITS = 10;
   const noGone = noHits >= MAX_HITS;
   const yesScale = noGone ? 1 : 1 + noHits * 0.1; // grows 10% per hit
-  const yesLabel = noGone ? "Alright fine" : "alright..";
+  const yesLabel = noGone ? "Yaudah, ayuk" : "Iyahh, gaskeun";
   const noLabel = NO_LABELS[Math.min(stage - 1, NO_LABELS.length - 1)];
 
   const measureYes = () => {
@@ -73,7 +110,7 @@ function Ask() {
       } else {
         const btnW = 110;
         const btnH = 42;
-        setNoPos(randomPos(btnW, btnH, nextStage));
+        setNoPos(randomPos(btnW, btnH, nextStage, yesBox));
       }
       return next;
     });
@@ -92,7 +129,87 @@ function Ask() {
     return (
       <main className="stage">
         <img src={cat} alt="Happy cat" className="hero fade-in" width={1024} height={1024} />
-        <h1 className="question final fade-in">Aww, thanks babe</h1>
+        <h1 className="question final fade-in">Yeayy, makasih yaaa</h1>
+        <button
+          className="btn btn-yes fade-in"
+          style={{ marginTop: "1rem" }}
+          onClick={() => setStage(7)}
+        >
+          Lanjut atur jadwal yuk!
+        </button>
+      </main>
+    );
+  }
+
+  if (stage === 7) {
+    return (
+      <main className="stage">
+        <h1 className="question fade-in">Mau nonton dimana?</h1>
+        <div className="btn-col fade-in">
+          <button className="btn btn-yes" onClick={() => { setLocation("KCM"); setStage(8); }}>KCM</button>
+          <button className="btn btn-yes" onClick={() => { setLocation("Summarecon Mall (SMB)"); setStage(8); }}>Summarecon Mall (SMB)</button>
+        </div>
+      </main>
+    );
+  }
+
+  if (stage === 8) {
+    return (
+      <main className="stage">
+        <h1 className="question fade-in">Mau nonton apa?</h1>
+        <div className="btn-col fade-in">
+          <button className="btn btn-yes" onClick={() => { setMovie("Film 1"); setStage(9); }}>Film 1</button>
+          <button className="btn btn-yes" onClick={() => { setMovie("Film 2"); setStage(9); }}>Film 2</button>
+          <button className="btn btn-yes" onClick={() => { setMovie("Film 3"); setStage(9); }}>Film 3</button>
+          <button className="btn btn-no" onClick={() => { setMovie("Ntar ajah pilih nya"); setStage(9); }} style={{ position: "relative" }}>Ntar ajah pilih nya</button>
+        </div>
+      </main>
+    );
+  }
+
+  if (stage === 9) {
+    return (
+      <main className="stage">
+        <h1 className="question fade-in">Kapan nih jadinya?</h1>
+        <div className="btn-col fade-in" style={{ alignItems: "center" }}>
+          <input
+            type="datetime-local"
+            className="input-custom"
+            value={dateStr}
+            onChange={(e) => setDateStr(e.target.value)}
+          />
+          <button
+            className="btn btn-yes full"
+            disabled={!dateStr}
+            style={{ opacity: !dateStr ? 0.5 : 1, width: "100%", marginTop: "0.5rem" }}
+            onClick={() => setStage(10)}
+          >
+            Lanjut
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (stage === 10) {
+    const waText = encodeURIComponent(`dap, nonton ny ini ${movie} aja di ${location}, tanggal ny ini ya ${dateStr.replace('T', ' jam ')} oce thank uuuuu`);
+    return (
+      <main className="stage">
+        <h1 className="question fade-in">Yeayy, udah beres!</h1>
+        <p className="fade-in text-center" style={{ color: "var(--ink)", maxWidth: "80%", fontSize: "1.1rem", lineHeight: "1.6" }}>
+          Nonton: <b>{movie}</b><br />
+          Tempat: <b>{location}</b><br />
+          Waktu: <b>{dateStr.replace('T', ' jam ')}</b>
+        </p>
+        <a
+          href={`https://api.whatsapp.com/send?phone=628139949585&text=${waText}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-yes fade-in"
+          style={{ textDecoration: "none", textAlign: "center", marginTop: "1.5rem" }}
+        >
+          Kirim ke WhatsApp!
+        </a>
       </main>
     );
   }
@@ -103,7 +220,7 @@ function Ask() {
   return (
     <main className="stage">
       <img src={penguins} alt="Penguins" className="hero" width={1024} height={1024} />
-      <h1 className="question">Would you go out with me?</h1>
+      <h1 className="question">Mw ga jalan nonton bareng aku</h1>
 
       <div className="btn-row">
         <button
@@ -161,7 +278,7 @@ function Ask() {
           }}
         >
           <span className="up">↑</span>
-          <span>Click here plss :(</span>
+          <span>Klik ini aja plss :(</span>
         </div>
       )}
     </main>
