@@ -36,14 +36,17 @@ function randomPos(btnW: number, btnH: number, stage: number) {
 }
 
 function Ask() {
-  const [stage, setStage] = useState(1); // 1..6
+  const [stage, setStage] = useState(1); // 1..6 (visual buckets + final)
+  const [noHits, setNoHits] = useState(0); // 0..10
   const [noPos, setNoPos] = useState<{ x: number; y: number } | null>(null);
   const yesRef = useRef<HTMLButtonElement>(null);
   const [yesBox, setYesBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
-  const yesScale = stage === 1 ? 1 : stage === 2 ? 1.1 : stage === 3 ? 1.3 : stage === 4 ? 1.5 : 1;
-  const yesLabel = stage >= 5 ? "Alright fine" : "alright..";
-  const noLabel = NO_LABELS[Math.min(stage - 1, 3)];
+  const MAX_HITS = 10;
+  const noGone = noHits >= MAX_HITS;
+  const yesScale = noGone ? 1 : 1 + noHits * 0.1; // grows 10% per hit
+  const yesLabel = noGone ? "Alright fine" : "alright..";
+  const noLabel = NO_LABELS[Math.min(stage - 1, NO_LABELS.length - 1)];
 
   const measureYes = () => {
     const el = yesRef.current;
@@ -57,32 +60,33 @@ function Ask() {
     const onR = () => measureYes();
     window.addEventListener("resize", onR);
     return () => window.removeEventListener("resize", onR);
-  }, [stage]);
+  }, [stage, noHits, noGone]);
 
-  const advanceNo = () => {
-    setStage((s) => {
-      const next = s + 1;
-      if (next >= 5) {
+  const bumpNo = () => {
+    setNoHits((h) => {
+      const next = Math.min(h + 1, MAX_HITS);
+      // stage buckets for label/ring/helper progression
+      const nextStage = next >= MAX_HITS ? 5 : next < 3 ? 2 : next < 6 ? 3 : 4;
+      setStage(nextStage);
+      if (next >= MAX_HITS) {
         setNoPos(null);
-        return 5;
+      } else {
+        const btnW = 110;
+        const btnH = 42;
+        setNoPos(randomPos(btnW, btnH, nextStage));
       }
-      const btnW = 110;
-      const btnH = 42;
-      setNoPos(randomPos(btnW, btnH, next));
       return next;
     });
   };
 
+  const advanceNo = bumpNo;
   const dodge = () => {
-    if (stage >= 5) return;
-    const btnW = 110;
-    const btnH = 42;
-    setNoPos(randomPos(btnW, btnH, Math.min(stage + 1, 4)));
+    if (noGone) return;
+    bumpNo();
   };
 
-  const handleYes = () => {
-    if (stage >= 5) setStage(6);
-  };
+  const handleYes = () => setStage(6);
+
 
   if (stage === 6) {
     return (
@@ -104,14 +108,14 @@ function Ask() {
       <div className="btn-row">
         <button
           ref={yesRef}
-          className={`btn btn-yes ${stage >= 5 ? "full" : ""}`}
-          style={stage < 5 ? { transform: `scale(${yesScale})` } : undefined}
+          className={`btn btn-yes ${noGone ? "full" : ""}`}
+          style={!noGone ? { transform: `scale(${yesScale})` } : undefined}
           onClick={handleYes}
         >
           {yesLabel}
         </button>
 
-        {stage < 5 && (
+        {!noGone && (
           <button
             className={`btn btn-no ${noPos ? "fly" : ""}`}
             style={noPos ? { left: noPos.x, top: noPos.y } : undefined}
