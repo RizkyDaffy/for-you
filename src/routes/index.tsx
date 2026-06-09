@@ -59,18 +59,25 @@ function Ask() {
     return () => window.removeEventListener("resize", onR);
   }, [stage]);
 
-  const handleNo = () => {
-    const next = stage + 1;
-    if (next >= 5) {
-      setStage(5);
-      setNoPos(null);
-      return;
-    }
-    // measure no button approx size
+  const advanceNo = () => {
+    setStage((s) => {
+      const next = s + 1;
+      if (next >= 5) {
+        setNoPos(null);
+        return 5;
+      }
+      const btnW = 110;
+      const btnH = 42;
+      setNoPos(randomPos(btnW, btnH, next));
+      return next;
+    });
+  };
+
+  const dodge = () => {
+    if (stage >= 5) return;
     const btnW = 110;
     const btnH = 42;
-    setNoPos(randomPos(btnW, btnH, next));
-    setStage(next);
+    setNoPos(randomPos(btnW, btnH, Math.min(stage + 1, 4)));
   };
 
   const handleYes = () => {
