@@ -4,6 +4,7 @@ const baseConfig = baseDefineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  nitro: true,
 });
 
 export default async (env: any) => {

@@ -79,6 +79,10 @@ function Ask() {
   const [movie, setMovie] = useState("");
   const [dateStr, setDateStr] = useState("");
 
+  // New states for custom movie input
+  const [showCustomMovieInput, setShowCustomMovieInput] = useState(false);
+  const [customMovieInput, setCustomMovieInput] = useState("");
+
   const MAX_HITS = 10;
   const noGone = noHits >= MAX_HITS;
   const yesScale = noGone ? 1 : 1 + noHits * 0.1; // grows 10% per hit
@@ -158,10 +162,33 @@ function Ask() {
       <main className="stage">
         <h1 className="question fade-in">Mau nonton apa?</h1>
         <div className="btn-col fade-in">
-          <button className="btn btn-yes" onClick={() => { setMovie("Film 1"); setStage(9); }}>Film 1</button>
-          <button className="btn btn-yes" onClick={() => { setMovie("Film 2"); setStage(9); }}>Film 2</button>
-          <button className="btn btn-yes" onClick={() => { setMovie("Film 3"); setStage(9); }}>Film 3</button>
+          <button className="btn btn-yes" onClick={() => { setMovie("Spiderman No Way Home"); setStage(9); setShowCustomMovieInput(false); }}>Spiderman No Way Home</button>
+          <button className="btn btn-yes" onClick={() => { setMovie("Sekawan Limo"); setStage(9); setShowCustomMovieInput(false); }}>Sekawan Limo</button>
+          <button className="btn btn-yes" onClick={() => { setMovie("Tumbal Proyek"); setStage(9); setShowCustomMovieInput(false); }}>Tumbal Proyek</button>
+          <button className="btn btn-yes" onClick={() => setShowCustomMovieInput(true)}>ada opsi lain ga</button>
+          {showCustomMovieInput && (
+            <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%" }}>
+              <input
+                type="text"
+                className="input-custom"
+                placeholder="aku mau nonton ini..."
+                value={customMovieInput}
+                onChange={(e) => setCustomMovieInput(e.target.value)}
+              />
+              <button
+                className="btn btn-yes full"
+                disabled={!customMovieInput}
+                onClick={() => {
+                  setMovie(customMovieInput);
+                  setStage(9);
+                }}
+              >
+                Lanjut dengan film ini
+              </button>
+            </div>
+          )}
           <button className="btn btn-no" onClick={() => { setMovie("Ntar ajah pilih nya"); setStage(9); }} style={{ position: "relative" }}>Ntar ajah pilih nya</button>
+          <button className="btn btn-no" onClick={() => { setStage(7); setShowCustomMovieInput(false); }}>kembali ke pilihan tempat</button>
         </div>
       </main>
     );
