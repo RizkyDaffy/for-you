@@ -1,10 +1,13 @@
 import { defineConfig as baseDefineConfig } from "@lovable.dev/vite-tanstack-config";
+import process from "node:process";
 
 const baseConfig = baseDefineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
-  nitro: true,
+  nitro: {
+    preset: process.env.VERCEL ? "vercel" : process.env.NETLIFY ? "netlify" : undefined,
+  },
 });
 
 export default async (env: any) => {
